@@ -1,0 +1,120 @@
+sat_prediction:
+  system: |
+    You are a logical reasoning assistant. You are given a logic puzzle.
+
+            <scenario>
+            {scenario}
+
+            <conditions>
+            {conditions}
+
+            <question>
+            {question}
+
+            Guidelines:
+            - All constraints come **only** from the <conditions> section.
+            - The <scenario> provides background and intuition, but **does not impose any additional rules or constraints**.
+            - All variables represent **independent decisions**; there is no mutual exclusivity or implicit linkage unless stated explicitly in <conditions>.
+            - Variables not mentioned in <conditions> are considered unknown and irrelevant to satisfiability.
+
+            Your task:
+            - If the puzzle is satisfiable, propose one valid assignment that satisfies all the conditions.
+            - If the puzzle is unsatisfiable, explain why some of the conditions cannot all be true at once.
+
+            Think step by step. At the end of your answer, output exactly one of the following labels on a new line:
+            [SAT] — if a valid assignment exists  
+            [UNSAT] — if the constraints cannot be satisfied  
+
+            Do not add any text or formatting after the final label.
+
+unsat_judgment:
+  system: |
+    You are evaluating whether a model's reasoning trace correctly explains an UNSAT logical puzzle.
+
+    <scenario>
+    {scenario}
+
+    <conditions>
+    {conditions}
+
+    <question>
+    {question}
+
+    <variable explanation>
+    {variable_mapping}
+
+    <reasoning trace from model>
+    {model_trace}
+
+    <ground-truth unsat reason>
+    {unsat_reason}
+
+    We already know this puzzle is UNSAT (unsatisfiable).  
+    Your task is to judge whether the reasoning trace correctly identifies or meaningfully reflects the cause of unsatisfiability — that is, whether it aligns with the given ground-truth unsat reason, even if it doesn't name it explicitly.
+
+    Focus on logical precision:  
+    - Does the trace show or imply a variable assignment or chain of reasoning that leads to contradiction?  
+    - Does it avoid hallucinations or irrelevant claims?
+
+    Note: The trace may present a specific variable assignment or reasoning path that leads to a contradiction. Whether it aligns with the given ground-truth UNSAT reason means you must judge whether the contradiction is logically valid and reflective of the actual cause — even if it doesn't explicitly name the minimal core or unsat pattern.
+
+    You are **not** evaluating whether the conclusion "UNSAT" is correct — that is already known to be correct.  
+    You are only evaluating whether the explanation substantively captures why the instance is unsatisfiable.
+
+    Please think step by step. First, explain whether and how the reasoning trace aligns with the unsat reason.  
+    Then, in the last line, output one of the following labels:
+
+    [YES] — the reasoning trace is logically valid and correctly captures the UNSAT cause  
+    [NO] — the trace is flawed, incomplete, or does not match the correct unsat reason
+
+    Do not include anything after this label.
+
+sat_assignment:
+  system: |
+    You are given a logical puzzle and a reasoning trace from a language model.
+
+        The puzzle is also expressed as a CNF (Conjunctive Normal Form) formula. Each clause is a disjunction (OR) of literals formatted like x(i,), x(i,j), or x(i,j,k). These variables follow the meaning:
+
+        - x(i,) means object or person i has some unnamed property.
+        - x(i,j) means object i has property or role j.
+        - x(i,j,k) means object i has property j in context or slot k (e.g., time, situation, location).
+
+        A positive literal like x(0,1) means that property is present.  
+        A negative literal like ¬x(0,1) means it is absent.
+
+        Below is the full logical puzzle and its corresponding formula:
+
+        <scenario>
+        {scenario}
+
+        <conditions>
+        {conditions}
+
+        <final question>
+        {question}
+
+        <variable explanation>
+        {variable_mapping}
+
+        <readable CNF formula>
+        {readable}
+
+        <trace from model>
+        {model_trace}
+
+        Your task is to extract the truth assignment implied by the model's reasoning trace, and evaluate whether each clause in the CNF formula is satisfied.
+
+        Go through the trace and determine whether each variable appearing in the CNF formula is marked as True or False.
+
+        Then, for each clause, evaluate the truth value of each literal using this assignment.
+
+        For example, if a clause in readable CNF formula is (x(0,) ∨ ¬x(1,)), and the model says x(0,) is True and x(1,) is also True, then this clause becomes [1, 0].
+
+        Think step by step. Show the variable assignments and how you evaluate each clause.
+
+        Finally, in the **last line**, output a single line in the format:
+        Assignment: [[1, 0], [0, 1, 1], [1], ...]
+
+        For any variable that is not explicitly mentioned in the reasoning trace, assume its value is 0 when constructing the assignment list.
+
+        Do not include anything after this label.

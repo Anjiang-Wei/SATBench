@@ -1,0 +1,425 @@
+scenario_mapping:
+  system: |
+    You are a logic puzzle designer. You will be given a logical formula in CNF (Conjunctive Normal Form), which consists of several clauses. Each clause is a disjunction (OR) of one or more boolean variables. These variables are formatted as x(i,), x(i,j), or x(i,j,k), where:
+
+    - x(i,) means object or person i has some unnamed property.
+    - x(i,j) means object i has property or role j.
+    - x(i,j,k) means object i has property j in context or slot k (e.g., time, situation, location).
+
+    A positive literal (e.g., x(0,1)) means the entity has the property.  
+    A negative literal (e.g., ¬x(0,1)) means it does not.
+
+    Your job is to create a real-world scenario and explain the variable meaning in a natural language sentence.
+
+    Do not write the constraints yet. Just create:
+    1. Write a short paragraph scenario (e.g., about friends, robots, students, jobs, factories, scientists, animals, aliens, etc.). Make sure to clearly state that each variable represents an independent decision. Decisions do not affect each other, and there are no implicit constraints or mutual exclusivity. For example, multiple entities may share the same role, or one entity may be assigned to multiple roles, or none.
+    2. One clear sentence mapping what x(i,) / x(i,j) / x(i,j,k) means in that scenario. After that, if your scenario refers to named entities (e.g., Alice, Bob, Carol), be explicit about which index corresponds to which entity. For example, say "Spy 0 is Alice" or "Machine 1 refers to the 3D printer" if needed. In this case, the original scenario sentence should also use these names, along with the numbers.
+    3. Be diverse and creative. Do not repeat the examples below.
+
+    Do NOT add any logical conditions or clauses yet. Just scenario and variable meaning.
+
+    Format:
+    <scenario description>
+
+    <variable explanation>
+
+    ---
+
+    Example 1:
+    Input:
+    (x(0,)) ∧ (x(1,) ∨ ¬x(0,) ∨ ¬x(2,)) ∧ (x(0,) ∨ ¬x(1,)) ∧ (x(0,) ∨ x(2,)) ∧ (¬x(1,))
+
+    Output:
+    <scenario description>
+    Three roommates—Alice, Bob, and Carol—are each considering whether to take on the daily household chore. Each person can choose independently whether to do it or not.
+
+    <variable explanation>
+    Let x(i,) mean roommate i takes the responsibility. Here, roommate 0 is Alice, roommate 1 is Bob, and roommate 2 is Carol.
+
+    ---
+
+    Example 2:
+    Input:
+    (¬x(2, 0) ∨ x(0, 0)) ∧ (¬x(0, 0) ∨ x(2, 1)) ∧ (¬x(2, 1) ∨ ¬x(2, 0)) ∧ (¬x(0, 0) ∨ ¬x(1, 0) ∨ ¬x(1, 1)) ∧ (x(0, 0) ∨ ¬x(2, 1)) ∧ (x(0, 1) ∨ x(1, 1) ∨ ¬x(2, 0)) ∧ (x(2, 0))
+
+    Output:
+    <scenario description>
+    A factory has 3 machines (0, 1, 2), and each machine may be used to perform any of two tasks (0 or 1). Each decision is independent — a machine may do multiple tasks or none.
+
+    <variable explanation>
+    Let x(i, j) mean machine i is assigned task j.
+
+    ---
+
+    Example 3:
+    Input:
+    (x(0, 1, 0) ∨ ¬x(0, 0, 1) ∨ ¬x(1, 1, 0)) ∧ (x(0, 0, 1) ∨ ¬x(1, 0, 1) ∨ ¬x(2, 1, 0)) ∧ (x(1, 0, 0) ∨ x(2, 1, 1)) ∧ (x(1, 1, 1) ∨ ¬x(0, 0, 1)) ∧ (x(0, 1, 0) ∨ x(2, 0, 0) ∨ ¬x(2, 1, 0))
+
+    Output:
+    <scenario description>
+    Three engineers—Mark, Joel, and Carol—are being evaluated across two skill categories (0 = programming, 1 = testing) under two situations (0 = simulation, 1 = live deployment). For each engineer, skill, and condition, we decide whether that evaluation was passed. Each decision is made independently.
+
+    <variable explanation>
+    Let x(i, j, k) mean engineer i shows skill j under situation k. Here, engineer 0 is Mark, engineer 1 is Joel, and engineer 2 is Carol.
+
+    ---
+
+    Now complete the following:
+
+    Input:
+    {readable}
+
+    Output:
+    
+puzzle_generation:
+  system: |
+    You are a puzzle formatter.
+
+    You will be given a logical formula in CNF (Conjunctive Normal Form), which consists of several clauses. Each clause is a disjunction (OR) of one or more boolean variables. These variables are formatted as x(i,), x(i,j), or x(i,j,k), where:
+
+    - x(i,) means object or person i has some unnamed property.
+    - x(i,j) means object i has property or role j.
+    - x(i,j,k) means object i has property j in context or slot k (e.g., time, situation, location).
+
+    A positive literal (e.g., x(0,1)) means the entity has the property.  
+    A negative literal (e.g., ¬x(0,1)) means it does not.
+
+    You will also be given:
+    - A real-world scenario description
+    - A variable explanation for the logic variables
+
+    Your task is:
+    - Write a list of natural language conditions, one per clause in the formula
+    - Translate each clause directly and faithfully into natural language.
+    - Number each condition and prefix the list with `<conditions>`
+    - At the end, write a final question such as: “Can all these conditions be satisfied?” or “Is there a way to assign values that makes this work?”
+
+    You MUST preserve the meaning of every clause. Do not omit, alter, or merge any.
+
+    Do not repeat the input formula, scenario, or variable explanation. Only generate the numbered conditions and the final question. Output format should be:
+
+    <conditions>
+    1. ...
+    2. ...
+    ...
+
+    <final question>
+
+    ---
+
+    Example 1:
+    Input:
+    <readable>
+    (x(0,)) ∧ (x(1,) ∨ ¬x(0,) ∨ ¬x(2,)) ∧ (x(0,) ∨ ¬x(1,)) ∧ (x(0,) ∨ x(2,)) ∧ (¬x(1,))
+
+    <scenario description>
+    Three roommates—Alice, Bob, and Carol—are each considering whether to take on the daily household chore. Each person can choose independently whether to do it or not.
+
+    <variable explanation>
+    Let x(i,) mean roommate i takes the responsibility.
+
+    Output:
+    <conditions>
+    1. Alice takes the responsibility.  
+    2. Either Bob does, or Alice doesn’t, or Carol doesn’t.  
+    3. Either Alice does it, or Bob doesn’t.  
+    4. Either Alice or Carol does it.  
+    5. Bob does not take the responsibility.  
+
+    <final question>
+    Can all these conditions be true at once?
+
+    ---
+
+    Example 2:
+    Input:
+    <readable>
+    (¬x(2, 0) ∨ x(0, 0)) ∧ (¬x(0, 0) ∨ x(2, 1)) ∧ (¬x(2, 1) ∨ ¬x(2, 0)) ∧ (¬x(0, 0) ∨ ¬x(1, 0) ∨ ¬x(1, 1)) ∧ (x(0, 0) ∨ ¬x(2, 1)) ∧ (x(0, 1) ∨ x(1, 1) ∨ ¬x(2, 0)) ∧ (x(2, 0))
+
+    <scenario description>
+    A factory has 3 machines (0, 1, 2), and each machine may be used to perform any of two tasks (0 or 1). Each decision is independent — a machine may do multiple tasks or none.
+
+    <variable explanation>
+    Let x(i, j) mean machine i is assigned task j.
+
+    Output:
+    <conditions>
+    1. Either machine 2 is not on task 0, or machine 0 is on task 0.
+    2. Either machine 0 is not on task 0, or machine 2 is on task 1.
+    3. Either machine 2 is not on task 1, or machine 2 is not on task 0.
+    4. Either machine 0 is not on task 0, or machine 1 is not on task 0, or machine 1 is not on task 1.
+    5. Either machine 0 is on task 0, or machine 2 is not on task 1.
+    6. Either machine 0 is on task 1, or machine 1 is on task 1, or machine 2 is not on task 0.
+    7. Machine 2 is on task 0.
+
+    <final question>
+    Can all these task assignments be satisfied?
+
+    ---
+
+    Example 3:
+    Input:
+    <readable>
+    (x(0, 1, 0) ∨ ¬x(0, 0, 1) ∨ ¬x(1, 1, 0)) ∧ (x(0, 0, 1) ∨ ¬x(1, 0, 1) ∨ ¬x(2, 1, 0)) ∧ (x(1, 0, 0) ∨ x(2, 1, 1)) ∧ (x(1, 1, 1) ∨ ¬x(0, 0, 1)) ∧ (x(0, 1, 0) ∨ x(2, 0, 0) ∨ ¬x(2, 1, 0))
+
+    <scenario description>
+    Three engineers (0, 1, 2) are being evaluated across two skill categories (0 = programming, 1 = testing) under two situations (0 = simulation, 1 = live deployment). For each engineer, skill, and condition, we decide whether that evaluation was passed. Each decision is made independently.
+
+    <variable explanation>
+    Let x(i, j, k) mean engineer i shows skill j under situation k.
+
+    Output:
+    <conditions>
+    1. Either engineer 0 tests in simulation, or engineer 0 doesn't program in deployment, or engineer 1 doesn't test in simulation.  
+    2. Either engineer 0 programs in deployment, or engineer 1 doesn't program in deployment, or engineer 2 doesn't test in simulation.  
+    3. Either engineer 1 programs in simulation, or engineer 2 tests in deployment.  
+    4. Engineer 1 tests in deployment, or engineer 0 doesn't program in deployment.  
+    5. Either engineer 0 tests in simulation, or engineer 2 programs in simulation, or engineer 2 doesn't test in simulation.  
+
+    <final question>
+    Can all these assessments be simultaneously valid?
+
+consistency_check:
+  system: |
+    You are a logic checker.
+
+    You are given a CNF formula, a variable explanation, and a natural language puzzle based on the formula. Your job is to check whether the natural language conditions are logically equivalent to the original CNF formula.
+
+    Specifically, for each clause in the CNF formula:
+    - Verify there is a corresponding natural language condition with equivalent logical meaning.
+    - Ensure the variable usage matches the explanation format.
+    - Make sure there are no missing clauses, no added constraints, and no changes in logic.
+
+    Pay special attention to logical implications and how they are expressed in natural language. For example:
+
+    The clause (¬x(2,) ∨ x(1,)) is logically equivalent to: “If x(2,) is true, then x(1,) is also true.” A common mistake is to write this as: “If ¬x(2,) then x(1,)”, which is incorrect. That corresponds to the clause (x(2,) ∨ x(1,)), and changes the meaning.
+
+    Here is the information:
+
+    <scenario>
+    {scenario}
+
+    <variable explanation>
+    {variable_mapping}
+
+    <conditions>
+    {conditions}
+
+    <question>
+    {question}
+
+    <readable CNF formula>
+    {readable}
+
+    Think step by step about whether the CNF and the natural language conditions match logically, clause by clause. Consider the number of clauses, the variable usage, and the logical operators involved. 
+
+    Your job is only to evaluate whether each condition correctly represents its corresponding clause in the CNF formula. You should not judge whether the overall formula or the scenario is satisfiable, solvable, or logically consistent.
+
+    Do not attempt to rewrite, fix, or invent any missing conditions. If any clause is missing, mistranslated, or not clearly represented, you must mark the result as [INCONSISTENT].
+
+    Finally, in the last line, output either [CONSISTENT] or [INCONSISTENT]. 
+    Do not include anything after this label.
+
+clause_recovery:
+  system: |
+    You are a SAT parser.
+
+    You are given a logic puzzle written in natural language (scenario + variable explanation + constraints).
+    Your job is to recover the corresponding CNF formula in human-readable format.
+
+    The formula consists of clauses joined by AND (∧), and each clause is a disjunction (OR) of literals. These variables are formatted as x(i,), x(i,j), or x(i,j,k), where:
+
+    - x(i,) means object or person i has some unnamed property.
+    - x(i,j) means object i has property or role j.
+    - x(i,j,k) means object i has property j in context or slot k (e.g., time, situation, location).
+
+    A positive literal (e.g., x(0,1)) means the entity has the property.  
+    A negative literal (e.g., ¬x(0,1)) means it does not.
+
+    ---
+
+    Example 1:
+    Input:
+    <scenario description>
+    Three roommates—Alice, Bob, and Carol—are each considering whether to take on the daily household chore. Each person can choose independently whether to do it or not.
+
+    <variable explanation>
+    Let x(i,) mean roommate i takes the responsibility.
+
+    <conditions>
+    1. Alice takes the responsibility.  
+    2. Either Bob does, or Alice doesn’t, or Carol doesn’t.  
+    3. Either Alice does it, or Bob doesn’t.  
+    4. Either Alice or Carol does it.  
+    5. Bob does not take the responsibility.  
+
+    Output:
+    <readable>
+    (x(0,)) ∧ (x(1,) ∨ ¬x(0,) ∨ ¬x(2,)) ∧ (x(0,) ∨ ¬x(1,)) ∧ (x(0,) ∨ x(2,)) ∧ (¬x(1,))
+
+    ---
+
+    Example 2:
+    Input:
+    <scenario description>
+    A factory has 3 machines (0, 1, 2), and each machine may be used to perform any of two tasks (0 or 1). Each decision is independent — a machine may do multiple tasks or none.
+
+    <variable explanation>
+    Let x(i, j) mean machine i is assigned task j.
+
+    <conditions>
+    1. Either machine 2 is not on task 0, or machine 0 is on task 0.
+    2. Either machine 0 is not on task 0, or machine 2 is on task 1.
+    3. Either machine 2 is not on task 1, or machine 2 is not on task 0.
+    4. Either machine 0 is not on task 0, or machine 1 is not on task 0, or machine 1 is not on task 1.
+    5. Either machine 0 is on task 0, or machine 2 is not on task 1.
+    6. Either machine 0 is on task 1, or machine 1 is on task 1, or machine 2 is not on task 0.
+    7. Machine 2 is on task 0.
+
+    Output:
+    <readable>
+    (¬x(2, 0) ∨ x(0, 0)) ∧ (¬x(0, 0) ∨ x(2, 1)) ∧ (¬x(2, 1) ∨ ¬x(2, 0)) ∧ (¬x(0, 0) ∨ ¬x(1, 0) ∨ ¬x(1, 1)) ∧ (x(0, 0) ∨ ¬x(2, 1)) ∧ (x(0, 1) ∨ x(1, 1) ∨ ¬x(2, 0)) ∧ (x(2, 0))
+
+    ---
+
+    Example 3:
+
+    <scenario>
+    Three engineers (0, 1, 2) are being evaluated across two skill categories (0 = programming, 1 = testing) under two situations (0 = simulation, 1 = live deployment).
+
+    <variable explanation>
+    Let x(i, j, k) mean engineer i shows skill j under situation k.
+
+    <conditions>
+    1. Either engineer 0 tests in simulation, or engineer 0 doesn't program in deployment, or engineer 1 doesn't test in simulation.  
+    2. Either engineer 0 programs in deployment, or engineer 1 doesn't program in deployment, or engineer 2 doesn't test in simulation.  
+    3. Either engineer 1 programs in simulation, or engineer 2 tests in deployment.  
+    4. Engineer 1 tests in deployment, or engineer 0 doesn't program in deployment.  
+    5. Either engineer 0 tests in simulation, or engineer 2 programs in simulation, or engineer 2 doesn't test in simulation.  
+
+    <readable formula>
+    (x(0, 1, 0) ∨ ¬x(0, 0, 1) ∨ ¬x(1, 1, 0)) ∧ (x(0, 0, 1) ∨ ¬x(1, 0, 1) ∨ ¬x(2, 1, 0)) ∧ (x(1, 0, 0) ∨ x(2, 1, 1)) ∧ (x(1, 1, 1) ∨ ¬x(0, 0, 1)) ∧ (x(0, 1, 0) ∨ x(2, 0, 0) ∨ ¬x(2, 1, 0))
+
+    Example 3:
+    Input:
+    <scenario description>
+    Three engineers (0, 1, 2) are being evaluated across two skill categories (0 = programming, 1 = testing) under two situations (0 = simulation, 1 = live deployment). For each engineer, skill, and condition, we decide whether that evaluation was passed. Each decision is made independently.
+
+    <variable explanation>
+    Let x(i, j, k) mean engineer i shows skill j under situation k.
+
+    <conditions>
+    1. Either engineer 0 tests in simulation, or engineer 0 doesn't program in deployment, or engineer 1 doesn't test in simulation.  
+    2. Either engineer 0 programs in deployment, or engineer 1 doesn't program in deployment, or engineer 2 doesn't test in simulation.  
+    3. Either engineer 1 programs in simulation, or engineer 2 tests in deployment.  
+    4. Engineer 1 tests in deployment, or engineer 0 doesn't program in deployment.  
+    5. Either engineer 0 tests in simulation, or engineer 2 programs in simulation, or engineer 2 doesn't test in simulation.  
+
+    Output:
+    <readable>
+    (x(0, 1, 0) ∨ ¬x(0, 0, 1) ∨ ¬x(1, 1, 0)) ∧ (x(0, 0, 1) ∨ ¬x(1, 0, 1) ∨ ¬x(2, 1, 0)) ∧ (x(1, 0, 0) ∨ x(2, 1, 1)) ∧ (x(1, 1, 1) ∨ ¬x(0, 0, 1)) ∧ (x(0, 1, 0) ∨ x(2, 0, 0) ∨ ¬x(2, 1, 0))
+    ---
+
+    Now your turn:
+
+    <scenario description>
+    {scenario}
+
+    <variable explanation>
+    {variable_mapping}
+
+    <conditions>
+    {conditions}
+
+    Think carefully and explain your reasoning. At the end, output the full readable CNF formula, enclosed in square brackets, like this:
+
+    [ (x(0,) ∨ ¬x(1,)) ∧ (x(2,) ∨ x(3,)) ∧ ... ]
+
+    Do not add any extra formatting or commentary outside of this format.
+
+equivalence_check:
+  system: |
+    You are a SAT equivalence checker.
+
+    You are given two CNF formulas and a variable mapping explanation. Your task is to determine whether the formulas are logically equivalent and correspond to the same interpretation based on the variable mapping.
+
+    - The first formula comes from the original problem.
+    - The second formula is recovered from a natural language puzzle using the same mapping.
+
+    You must:
+    - Compare whether each clause from both formulas represents the same logic.
+    - Ensure that the variable mapping (e.g., what x(i,j) means) has been preserved.
+    - Only return [EQUIVALENT] if the logical meaning of each clause is preserved.
+
+    ---
+
+    <original scenario>
+    {scenario}
+
+    <variable mapping>
+    {variable_mapping}
+
+    <conditions>
+    {conditions}
+
+    <final question>
+    {question}
+
+    <original formula>
+    {readable}
+
+    <recovered formula>
+    {recovered}
+
+    Does the recovered formula exactly match the original, clause by clause? Consider both structure and interpretation.
+
+    Only output [EQUIVALENT] or [DIFFERENT]. Do not add explanation.
+
+generation:
+  system: |
+    Now it's your turn.
+    
+    Input:
+    <readable>
+    {readable}
+    
+    <scenario description>
+    {scenario}
+    
+    <variable explanation>
+    {variable_mapping}
+    
+    Output:
+
+generation_retry:
+  system: |
+    Now it's your turn.
+
+    Input:
+    <readable>
+    {readable}
+
+    <scenario description>
+    {scenario}
+
+    <variable explanation>
+    {variable_mapping}
+
+    Previously, your output was inconsistent with the CNF formula. Below is your previous output and the error analysis. Please revise it accordingly.
+
+    <previous conditions>
+    {previous_conditions}
+
+    <previous final question>
+    {previous_question}
+
+    <consistency feedback>
+    {consistency_feedback}
+
+    Only revise the conditions and the final question. Output format should be:
+
+    <conditions>
+    1. ...
+    2. ...
+
+    <final question>
