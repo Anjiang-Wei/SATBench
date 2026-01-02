@@ -25,6 +25,7 @@ import os
 import shlex
 import subprocess
 import shutil
+import random
 from pathlib import Path
 from typing import Optional
 from tqdm.asyncio import tqdm
@@ -38,6 +39,8 @@ parser.add_argument("--model", type=str, default="gpt-5-nano", help="Model to us
 parser.add_argument("--limit", type=int, default=100, help="Maximum number of samples to evaluate")
 parser.add_argument("--output", type=str, default="codex_eval_results.jsonl", help="Path to save results")
 parser.add_argument("--n-concurrent", type=int, default=20, help="Number of concurrent evaluations")
+parser.add_argument("--parity", action="store_true", help="Use parity mode: use more difficult problems (num_clauses >= 15) and random sample 100 problems")
+parser.add_argument("--seed", type=int, default=43, help="Random seed for parity mode sampling (default: 43)")
 args = parser.parse_args()
 
 
@@ -84,8 +87,10 @@ def extract_sat_label(text: str) -> Optional[str]:
 
 def run_codex_sync(prompt: str, task_id: str, work_dir: Path) -> str:
     """Run codex agent with the given prompt."""
-    task_work_dir = work_dir / f"task_{task_id}"
-    task_work_dir.mkdir(parents=True, exist_ok=True)
+    import tempfile
+
+    # Create a completely isolated temp directory for this task
+    task_work_dir = Path(tempfile.mkdtemp(prefix=f"codex_task_{task_id}_"))
 
     escaped_prompt = shlex.quote(prompt)
 
@@ -94,7 +99,6 @@ def run_codex_sync(prompt: str, task_id: str, work_dir: Path) -> str:
         "exec",
         "--skip-git-repo-check",
         "--model", MODEL_NAME,
-        "--temperature", "0",
         escaped_prompt,
     ]
 
@@ -108,7 +112,18 @@ def run_codex_sync(prompt: str, task_id: str, work_dir: Path) -> str:
             timeout=300,
         )
         output = result.stdout + "\n" + result.stderr
-        return output
+
+        # Extract only the model's response before the CLI metadata
+        # The metadata starts with "OpenAI Codex v" or similar patterns
+        lines = output.split('\n')
+        model_response_lines = []
+        for line in lines:
+            # Stop when we hit the CLI metadata section
+            if line.strip().startswith('OpenAI Codex') or line.strip().startswith('workdir:'):
+                break
+            model_response_lines.append(line)
+
+        return '\n'.join(model_response_lines)
     except subprocess.TimeoutExpired:
         return "[ERROR: Codex execution timed out]"
     except Exception as e:
@@ -145,7 +160,31 @@ async def run_evaluation():
     """Main evaluation loop."""
     print(f"Loading SATBench dataset...")
     ds = load_dataset("LLM4Code/SATBench", split="train")
-    entries = [dict(x) for x in ds][:args.limit]
+    entries = [dict(x) for x in ds]
+
+    if args.parity:
+        # Create entries with their original indices
+        indexed_entries = [(i, e) for i, e in enumerate(entries) if e.get("num_clauses", 0) >= 15]
+        print(f"Parity mode: filtered {len(indexed_entries)} tasks with num_clauses >= 15")
+
+        # Set random seed for reproducibility
+        random.seed(args.seed)
+
+        # Random sample 100 problems (or fewer if not enough available)
+        sample_size = min(100, len(indexed_entries))
+        sampled_indexed = random.sample(indexed_entries, sample_size)
+
+        # Sort by original index to maintain consistent order with adapter
+        sampled_indexed.sort(key=lambda x: x[0])
+
+        # Extract just the entries (indices are preserved in the sort)
+        entries = [e for i, e in sampled_indexed]
+        indices = [str(i) for i, e in sampled_indexed]
+
+        print(f"Randomly sampled {len(entries)} tasks using seed {args.seed}")
+        print(f"Task IDs (first 10): {indices[:10]}")
+    else:
+        entries = entries[:args.limit]
 
     print(f"Evaluating {len(entries)} tasks with codex (model: {MODEL_NAME})")
 
