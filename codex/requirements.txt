@@ -1,0 +1,9 @@
+# Requirements for Codex agent evaluation on SATBench
+
+# Core dependencies
+datasets>=2.14.0
+pyyaml>=6.0
+tqdm>=4.65.0
+
+# The main SATBench requirements are also needed
+# (they should already be installed if you're in the SATBench environment)
