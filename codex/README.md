@@ -21,10 +21,10 @@ This directory contains scripts to evaluate the Codex agent on the SATBench logi
 
 ## Usage
 
-### Basic Usage (100 tasks, default model)
+### Parity Experiments (100 tasks, default model of gpt-5-nano, use parity datasets)
 
 ```bash
-python evaluate_codex.py
+python evaluate_codex.py --parity
 ```
 
 ### Full Dataset Evaluation with specified model
@@ -39,15 +39,19 @@ python evaluate_codex.py --model gpt-4o --limit 2100
 - `--limit`: Maximum number of samples to evaluate (default: `10`)
 - `--output`: Path to save evaluation results (default: `codex_eval_results.jsonl`)
 - `--n-concurrent`: Number of concurrent evaluations (default: `20`)
+- `--parity`: Whether to use datasets for parity experiments
 
 ## Example Output
 
 ```
-Loading SATBench dataset...
-Evaluating 10 tasks with codex (model: gpt-4o)
-100%|████████████████████████████████████| 10/10 [01:23<00:00,  8.35s/it]
-
-FINAL ACCURACY: 70.00% (7/10)
+Loading SATBench dataset...                                                                                                                                                       
+Parity mode: filtered 1120 tasks with num_clauses >= 15                                                                                                                           
+Randomly sampled 100 tasks using seed 43                                                                                                                                          
+Task IDs (first 10): ['105', '169', '180', '241', '274', '275', '292', '329', '331', '336']                                                                                       
+Evaluating 100 tasks with codex (model: gpt-5-nano)                                                                                                                               
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [10:30<00:00,  6.31s/it]
+                                                                                                                                                                                  
+FINAL ACCURACY: 71.00% (71/100)
 ```
 
 ## Citation
@@ -63,3 +67,4 @@ If you use this evaluation script, please cite the original SATBench paper:
   year={2025}
 }
 ```
+
