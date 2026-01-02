@@ -174,10 +174,12 @@ If you use this benchmark in your research, please cite:
 @article{wei2025satbench,
   title={SATBench: Benchmarking LLMs' Logical Reasoning via Automated Puzzle Generation from SAT Formulas},
   author={Wei, Anjiang and Wu, Yuheng and Wan, Yingjia and Suresh, Tarun and Tan, Huanmi and Zhou, Zhanke and Koyejo, Sanmi and Wang, Ke and Aiken, Alex},
-  journal={arXiv preprint arXiv:2505.14615},
+  booktitle={Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing},
+  pages={33820--33837},
   year={2025}
 }
 ```
+
 
 
 
